@@ -89,7 +89,7 @@ static int test_kdf_tls1_prf_invalid_digest(void)
 
     ret = TEST_ptr(params)
         && TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_TLS1_PRF))
-        && TEST_false(EVP_KDF_CTX_set_params(kctx, params));
+        && TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0);
 
     EVP_KDF_CTX_free(kctx);
     OPENSSL_free(params);
@@ -108,7 +108,7 @@ static int test_kdf_tls1_prf_zero_output_size(void)
     /* Negative test - derive should fail */
     ret = TEST_ptr(params)
         && TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_TLS1_PRF))
-        && TEST_true(EVP_KDF_CTX_set_params(kctx, params))
+        && TEST_int_gt(EVP_KDF_CTX_set_params(kctx, params), 0)
         && TEST_int_eq(EVP_KDF_derive(kctx, out, 0, NULL), 0);
 
     EVP_KDF_CTX_free(kctx);
@@ -164,7 +164,7 @@ static int test_kdf_tls1_prf_empty_seed(void)
     /* Negative test - derive should fail */
     ret = TEST_ptr(params)
         && TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_TLS1_PRF))
-        && TEST_true(EVP_KDF_CTX_set_params(kctx, params))
+        && TEST_int_gt(EVP_KDF_CTX_set_params(kctx, params), 0)
         && TEST_int_eq(EVP_KDF_derive(kctx, out, sizeof(out), NULL), 0);
 
     EVP_KDF_CTX_free(kctx);
@@ -253,7 +253,7 @@ static int do_kdf_hkdf_gettables(int expand_only, int has_digest)
                                                  "secret", 6, "salt",
                                                  expand_only ? NULL : "label"))
         || !TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_HKDF))
-        || !TEST_true(EVP_KDF_CTX_set_params(kctx, params)))
+        || TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0))
         goto err;
 
     /* Check OSSL_KDF_PARAM_SIZE is gettable */
@@ -309,7 +309,7 @@ static int test_kdf_hkdf_invalid_digest(void)
 
     ret = TEST_ptr(params)
         && TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_HKDF))
-        && TEST_false(EVP_KDF_CTX_set_params(kctx, params));
+        && TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0);
 
     EVP_KDF_CTX_free(kctx);
     OPENSSL_free(params);
@@ -411,7 +411,7 @@ static int test_kdf_hkdf_zero_output_size(void)
     /* Negative test - derive should fail */
     ret = TEST_ptr(params)
         && TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_HKDF))
-        && TEST_true(EVP_KDF_CTX_set_params(kctx, params))
+        && TEST_int_gt(EVP_KDF_CTX_set_params(kctx, params), 0)
         && TEST_int_eq(EVP_KDF_derive(kctx, out, 0, NULL), 0);
 
     EVP_KDF_CTX_free(kctx);
@@ -529,7 +529,7 @@ static int test_kdf_pbkdf1(void)
 
     if (!TEST_ptr(params)
         || !TEST_ptr(kctx = get_kdfbyname_libctx(libctx, OSSL_KDF_NAME_PBKDF1))
-        || !TEST_true(EVP_KDF_CTX_set_params(kctx, params))
+        || TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0)
         || !TEST_int_gt(EVP_KDF_derive(kctx, out, sizeof(out), NULL), 0)
         || !TEST_mem_eq(out, sizeof(out), expected, sizeof(expected)))
         goto err;
@@ -579,7 +579,7 @@ static int test_kdf_pbkdf1_key_too_long(void)
      */
     if (!TEST_ptr(params)
         || !TEST_ptr(kctx = get_kdfbyname_libctx(libctx, OSSL_KDF_NAME_PBKDF1))
-        || !TEST_true(EVP_KDF_CTX_set_params(kctx, params))
+        || TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0)
         || !TEST_int_eq(EVP_KDF_derive(kctx, out, sizeof(out), NULL), 0))
         goto err;
 
@@ -662,7 +662,7 @@ static int test_kdf_pbkdf2_small_output(void)
 
     if (!TEST_ptr(params)
         || !TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_PBKDF2))
-        || !TEST_true(EVP_KDF_CTX_set_params(kctx, params))
+        || TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0)
         /* A key length that is too small should fail */
         || !TEST_int_eq(EVP_KDF_derive(kctx, out, 112 / 8 - 1, NULL), 0))
         goto err;
@@ -694,7 +694,7 @@ static int test_kdf_pbkdf2_large_output(void)
     if (!TEST_ptr(params)
         || !TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_PBKDF2))
         /* A key length that is too large should fail */
-        || !TEST_true(EVP_KDF_CTX_set_params(kctx, params))
+        || TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0)
         || (len != 0 && !TEST_int_eq(EVP_KDF_derive(kctx, out, len, NULL), 0)))
         goto err;
 
@@ -720,7 +720,7 @@ static int test_kdf_pbkdf2_small_salt(void)
     if (!TEST_ptr(params)
         || !TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_PBKDF2))
         /* A salt that is too small should fail */
-        || !TEST_false(EVP_KDF_CTX_set_params(kctx, params)))
+        || !TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0))
         goto err;
 
     ret = 1;
@@ -745,7 +745,7 @@ static int test_kdf_pbkdf2_small_iterations(void)
     if (!TEST_ptr(params)
         || !TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_PBKDF2))
         /* An iteration count that is too small should fail */
-        || !TEST_false(EVP_KDF_CTX_set_params(kctx, params)))
+        || !TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0))
         goto err;
 
     ret = 1;
@@ -772,7 +772,7 @@ static int test_kdf_pbkdf2_small_salt_pkcs5(void)
     if (!TEST_ptr(params)
         || !TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_PBKDF2))
         /* A salt that is too small should pass in pkcs5 mode */
-        || !TEST_true(EVP_KDF_CTX_set_params(kctx, params))
+        || !TEST_int_gt(EVP_KDF_CTX_set_params(kctx, params), 0)
         || !TEST_int_gt(EVP_KDF_derive(kctx, out, sizeof(out), NULL), 0))
         goto err;
 
@@ -781,7 +781,7 @@ static int test_kdf_pbkdf2_small_salt_pkcs5(void)
     mode_params[1] = OSSL_PARAM_construct_end();
 
     /* If the "pkcs5" mode is disabled then the derive will now fail */
-    if (!TEST_true(EVP_KDF_CTX_set_params(kctx, mode_params))
+    if (!TEST_int_gt(EVP_KDF_CTX_set_params(kctx, mode_params), 0)
         || !TEST_int_eq(EVP_KDF_derive(kctx, out, sizeof(out), NULL), 0))
         goto err;
 
@@ -809,7 +809,7 @@ static int test_kdf_pbkdf2_small_iterations_pkcs5(void)
     if (!TEST_ptr(params)
         || !TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_PBKDF2))
         /* An iteration count that is too small will pass in pkcs5 mode */
-        || !TEST_true(EVP_KDF_CTX_set_params(kctx, params))
+        || !TEST_int_gt(EVP_KDF_CTX_set_params(kctx, params), 0)
         || !TEST_int_gt(EVP_KDF_derive(kctx, out, sizeof(out), NULL), 0))
         goto err;
 
@@ -818,7 +818,7 @@ static int test_kdf_pbkdf2_small_iterations_pkcs5(void)
     mode_params[1] = OSSL_PARAM_construct_end();
 
     /* If the "pkcs5" mode is disabled then the derive will now fail */
-    if (!TEST_true(EVP_KDF_CTX_set_params(kctx, mode_params))
+    if (!TEST_int_gt(EVP_KDF_CTX_set_params(kctx, mode_params), 0)
         || !TEST_int_eq(EVP_KDF_derive(kctx, out, sizeof(out), NULL), 0))
         goto err;
 
@@ -844,7 +844,7 @@ static int test_kdf_pbkdf2_invalid_digest(void)
     if (!TEST_ptr(params)
         || !TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_PBKDF2))
         /* Unknown digest should fail */
-        || !TEST_false(EVP_KDF_CTX_set_params(kctx, params)))
+        || !TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0))
         goto err;
 
     ret = 1;
@@ -885,11 +885,9 @@ static int test_kdf_scrypt(void)
 
     ret =
         TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_SCRYPT))
-        && TEST_true(EVP_KDF_CTX_set_params(kctx, params))
-        /* failure test *//*
-        && TEST_int_le(EVP_KDF_derive(kctx, out, sizeof(out), NULL), 0)*/
+        && TEST_int_gt(EVP_KDF_CTX_set_params(kctx, params), 0)
         && TEST_true(OSSL_PARAM_set_uint(p - 1, 10 * 1024 * 1024))
-        && TEST_true(EVP_KDF_CTX_set_params(kctx, p - 1))
+        && TEST_int_gt(EVP_KDF_CTX_set_params(kctx, p - 1), 0)
         && TEST_int_gt(EVP_KDF_derive(kctx, out, sizeof(out), NULL), 0)
         && TEST_mem_eq(out, sizeof(out), expected, sizeof(expected));
 
@@ -1160,7 +1158,7 @@ static int test_kdf_kbkdf_invalid_digest(void)
     /* Negative test case - set_params should fail */
     kctx = get_kdfbyname("KBKDF");
     ret = TEST_ptr(kctx)
-        && TEST_false(EVP_KDF_CTX_set_params(kctx, params));
+        && TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0);
 
     EVP_KDF_CTX_free(kctx);
     OPENSSL_free(params);
@@ -1183,7 +1181,7 @@ static int test_kdf_kbkdf_invalid_mac(void)
     /* Negative test case - set_params should fail */
     kctx = get_kdfbyname("KBKDF");
     ret = TEST_ptr(kctx)
-        && TEST_false(EVP_KDF_CTX_set_params(kctx, params));
+        && TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0);
 
     EVP_KDF_CTX_free(kctx);
     OPENSSL_free(params);
@@ -1206,7 +1204,7 @@ static int test_kdf_kbkdf_invalid_r(void)
     /* Negative test case - derive should fail */
     kctx = get_kdfbyname("KBKDF");
     ret = TEST_ptr(kctx)
-        && TEST_false(EVP_KDF_CTX_set_params(kctx, params));
+        && TEST_int_le(EVP_KDF_CTX_set_params(kctx, params), 0);
 
     EVP_KDF_CTX_free(kctx);
     OPENSSL_free(params);
@@ -1231,7 +1229,7 @@ static int test_kdf_kbkdf_empty_key(void)
     /* Negative test case - derive should fail */
     kctx = get_kdfbyname("KBKDF");
     ret = TEST_ptr(kctx)
-        && TEST_true(EVP_KDF_CTX_set_params(kctx, params))
+        && TEST_int_gt(EVP_KDF_CTX_set_params(kctx, params), 0)
         && TEST_int_eq(EVP_KDF_derive(kctx, result, sizeof(result), NULL), 0);
 
     EVP_KDF_CTX_free(kctx);
@@ -1279,7 +1277,7 @@ static int test_kdf_kbkdf_zero_output_size(void)
     /* Negative test case - derive should fail */
     kctx = get_kdfbyname("KBKDF");
     ret = TEST_ptr(kctx)
-        && TEST_true(EVP_KDF_CTX_set_params(kctx, params))
+        && TEST_int_gt(EVP_KDF_CTX_set_params(kctx, params), 0)
         && TEST_int_eq(EVP_KDF_derive(kctx, result, 0, NULL), 0);
 
     EVP_KDF_CTX_free(kctx);
@@ -2000,7 +1998,7 @@ static int test_kbkdf_mac_change(void)
                                                  OSSL_MAC_NAME_KMAC128, 0);
     params[1] = OSSL_PARAM_construct_end();
     if (!TEST_ptr(kctx = get_kdfbyname(OSSL_KDF_NAME_KBKDF))
-            || !TEST_true(EVP_KDF_CTX_set_params(kctx, params)))
+            || !TEST_int_gt(EVP_KDF_CTX_set_params(kctx, params), 0))
         goto err;
 
     *p++ = OSSL_PARAM_construct_utf8_string(OSSL_KDF_PARAM_MODE, "COUNTER", 0);

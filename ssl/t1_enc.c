@@ -71,7 +71,7 @@ static int tls1_PRF(SSL_CONNECTION *s,
     *p++ = OSSL_PARAM_construct_octet_string(OSSL_KDF_PARAM_SEED,
                                              (void *)seed5, (size_t)seed5_len);
     *p = OSSL_PARAM_construct_end();
-    if (EVP_KDF_derive(kctx, out, olen, params)) {
+    if (EVP_KDF_derive(kctx, out, olen, params) > 0) {
         EVP_KDF_CTX_free(kctx);
         return 1;
     }

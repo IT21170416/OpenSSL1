@@ -118,7 +118,7 @@ int PKCS12_key_gen_uni_ex(unsigned char *pass, int passlen, unsigned char *salt,
         BIO_printf(trc_out, "\n");
     } OSSL_TRACE_END(PKCS12_KEYGEN);
 
-    if (EVP_KDF_derive(ctx, out, (size_t)n, params)) {
+    if (EVP_KDF_derive(ctx, out, (size_t)n, params) > 0) {
         res = 1;
         OSSL_TRACE_BEGIN(PKCS12_KEYGEN) {
             BIO_printf(trc_out, "Output KEY (length %d)\n", n);

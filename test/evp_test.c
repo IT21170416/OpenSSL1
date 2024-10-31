@@ -3752,13 +3752,13 @@ static int kdf_test_run(EVP_TEST *t)
                          NULL,
                          params, OSSL_NELEM(params), &params_n))
             goto err;
-        if (!EVP_KDF_CTX_set_params(expected->ctx, params)) {
+        if (EVP_KDF_CTX_set_params(expected->ctx, params) <= 0) {
             t->err = "KDF_CTRL_ERROR";
             goto err;
         }
     }
 
-    if (!EVP_KDF_CTX_set_params(expected->ctx, expected->params)) {
+    if (EVP_KDF_CTX_set_params(expected->ctx, expected->params) <= 0) {
         t->err = "KDF_CTRL_ERROR";
         goto err;
     }

@@ -156,7 +156,7 @@ opthelp:
         if (params == NULL)
             goto err;
 
-        if (!EVP_KDF_CTX_set_params(ctx, params)) {
+        if (EVP_KDF_CTX_set_params(ctx, params) <= 0) {
             BIO_printf(bio_err, "KDF parameter error\n");
             ERR_print_errors(bio_err);
             ok = 0;
@@ -178,7 +178,7 @@ opthelp:
     if (dkm_bytes == NULL)
         goto err;
 
-    if (!EVP_KDF_derive(ctx, dkm_bytes, dkm_len, NULL)) {
+    if (EVP_KDF_derive(ctx, dkm_bytes, dkm_len, NULL) <= 0) {
         BIO_printf(bio_err, "EVP_KDF_derive failed\n");
         goto err;
     }
